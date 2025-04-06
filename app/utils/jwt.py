@@ -38,22 +38,22 @@ def token_required(f):
         if not data:
             return jsonify({"error": "Token inválido ou expirado"}), 401
 
-        request.user = data  # attach user data
+        request.user = data 
         return f(*args, **kwargs)
     
     return wrapper
 
-def role_required(required_role):
+def role_required(*required_roles):
     def decorator(f):
         @wraps(f)
         def wrapper(*args, **kwargs):
             if not hasattr(request, "user"):
                 return jsonify({"error": "Usuário não autenticado"}), 403
 
-            if request.user["role"] != required_role:
+            user_role = request.user.get("role")
+            if user_role not in required_roles:
                 return jsonify({"error": "Permissão negada"}), 403
 
             return f(*args, **kwargs)
         return wrapper
     return decorator
-

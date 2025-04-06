@@ -1,109 +1,118 @@
-from app.database.connection import get_db
 from datetime import datetime
+from sqlalchemy import text
+from app.database.database import SessionLocal
 
 # LIST
 def list_users(filters):
-    conn = get_db()
-    cursor = conn.cursor()
+    session = SessionLocal()
+    try:
+        base_query = """
+            SELECT id, name, email, role, created_at, updated_at, deleted_at
+            FROM users
+        """
+        conditions = []
+        values = {}
 
-    base_query = "SELECT id, name, email, role, created_at, updated_at, deleted_at FROM users"
-    conditions = []
-    values = []
+        all_param = filters.get("all", False)
+        if isinstance(all_param, str):
+            include_all = all_param.lower() == "true"
+        else:
+            include_all = bool(all_param)
 
-    all_param = filters.get("all", False)
-    if isinstance(all_param, str):
-        include_all = all_param.lower() == "true"
-    else:
-        include_all = bool(all_param)
+        if not include_all:
+            conditions.append("deleted_at IS NULL")
 
-    if not include_all:
-        conditions.append("deleted_at IS NULL")
+        if filters.get("name"):
+            conditions.append("name ILIKE :name")
+            values["name"] = f"%{filters['name']}%"
+        if filters.get("email"):
+            conditions.append("email ILIKE :email")
+            values["email"] = f"%{filters['email']}%"
+        if filters.get("role"):
+            conditions.append("role = :role")
+            values["role"] = filters["role"]
 
-    if filters.get("name"):
-        conditions.append("name ILIKE %s")
-        values.append(f"%{filters['name']}%")
-    if filters.get("email"):
-        conditions.append("email ILIKE %s")
-        values.append(f"%{filters['email']}%")
-    if filters.get("role"):
-        conditions.append("role = %s")
-        values.append(filters["role"])
+        if conditions:
+            base_query += " WHERE " + " AND ".join(conditions)
 
-    if conditions:
-        base_query += " WHERE " + " AND ".join(conditions)
+        base_query += " ORDER BY created_at DESC"
 
-    base_query += " ORDER BY created_at DESC"
+        result = session.execute(text(base_query), values)
+        users = result.fetchall()
 
-    cursor.execute(base_query, tuple(values))
-    users = cursor.fetchall()
-    cursor.close()
-    conn.close()
-
-    return [
-        {
-            "id": user[0],
-            "name": user[1],
-            "email": user[2],
-            "role": user[3],
-            "created_at": user[4].isoformat() ,
-            "updated_at": user[5].isoformat() if user[5] else None,
-            "deleted_at": user[6].isoformat() if user[6] else None,
-        }
-        for user in users
-    ]
+        return [
+            {
+                "id": row.id,
+                "name": row.name,
+                "email": row.email,
+                "role": row.role,
+                "created_at": row.created_at.isoformat(),
+                "updated_at": row.updated_at.isoformat() if row.updated_at else None,
+                "deleted_at": row.deleted_at.isoformat() if row.deleted_at else None,
+            }
+            for row in users
+        ]
+    finally:
+        session.close()
 
 # DELETE
 def delete_user(user_id):
-    conn = get_db()
-    cursor = conn.cursor()
-
-    cursor.execute(
-        "UPDATE users SET deleted_at = CURRENT_TIMESTAMP WHERE id = %s AND deleted_at IS NULL",
-        (user_id,)
-    )
-    conn.commit()
-    cursor.close()
-    conn.close()
-    return {"message": "Usuário deletado com sucesso"}
+    session = SessionLocal()
+    try:
+        query = text("""
+            UPDATE users
+            SET deleted_at = CURRENT_TIMESTAMP
+            WHERE id = :user_id AND deleted_at IS NULL
+            RETURNING id
+        """)
+        result = session.execute(query, {"user_id": user_id})
+        session.commit()
+        if result.fetchone():
+            return {"message": "Usuário deletado com sucesso"}
+        else:
+            return {"error": "Usuário não encontrado ou já foi deletado"}
+    finally:
+        session.close()
 
 # UPDATE
 def update_user(user_id, data):
-    conn = get_db()
-    cursor = conn.cursor()
+    session = SessionLocal()
+    try:
+        fields = []
+        values = {}
 
-    fields = []
-    values = []
+        if "name" in data:
+            fields.append("name = :name")
+            values["name"] = data["name"]
 
-    if "name" in data:
-        fields.append("name = %s")
-        values.append(data["name"])
+        if "email" in data:
+            fields.append("email = :email")
+            values["email"] = data["email"]
 
-    if "email" in data:
-        fields.append("email = %s")
-        values.append(data["email"])
+        if "role" in data:
+            fields.append("role = :role")
+            values["role"] = data["role"]
 
-    if "role" in data:
-        fields.append("role = %s")
-        values.append(data["role"])
+        if not fields:
+            return {"error": "Nenhum campo fornecido para atualização"}
 
-    if not fields:
-        cursor.close()
-        conn.close()
-        return {"error": "Nenhum campo fornecido para atualização"}
+        fields.append("updated_at = :updated_at")
+        values["updated_at"] = datetime.utcnow()
+        values["user_id"] = user_id
 
-    fields.append("updated_at = %s")
-    values.append(datetime.utcnow())
+        query = f"""
+            UPDATE users
+            SET {', '.join(fields)}
+            WHERE id = :user_id AND deleted_at IS NULL
+            RETURNING id
+        """
 
-    values.append(user_id)
-    query = f"UPDATE users SET {', '.join(fields)} WHERE id = %s AND deleted_at IS NULL RETURNING id"
+        result = session.execute(text(query), values)
+        session.commit()
 
-    cursor.execute(query, tuple(values))
-    updated = cursor.fetchone()
-    conn.commit()
-    cursor.close()
-    conn.close()
-
-    if updated:
-        return {"message": "Usuário atualizado com sucesso"}
-    else:
-        return {"error": "Usuário não encontrado ou já foi deletado"}
+        if result.fetchone():
+            return {"message": "Usuário atualizado com sucesso"}
+        else:
+            return {"error": "Usuário não encontrado ou já foi deletado"}
+    finally:
+        session.close()
