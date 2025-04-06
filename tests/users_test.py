@@ -75,9 +75,26 @@ def test_update_user_unauthorized():
     assert response.status_code == 401
 
 def test_delete_user_success():
-    response = requests.delete(f"{BASE_URL}/users/2", headers=headers)
-    assert response.status_code == 200
-    assert "message" in response.json()
+    unique_email = f"testdelete_{uuid.uuid4().hex[:6]}@netdiag.io"
+    create_payload = {
+        "name": "Usuário para Deletar",
+        "email": unique_email,
+        "password": "deletepass123",
+        "role": "user"
+    }
+    create_response = requests.post(f"{BASE_URL}/auth/register", json=create_payload, headers=headers)
+    assert create_response.status_code == 201
+
+    list_response = requests.get(f"{BASE_URL}/users", headers=headers)
+    assert list_response.status_code == 200
+    users = list_response.json()
+    created_user = next((u for u in users if u["email"] == unique_email), None)
+    assert created_user is not None
+    user_id = created_user["id"]
+
+    delete_response = requests.delete(f"{BASE_URL}/users/{user_id}", headers=headers)
+    assert delete_response.status_code == 200
+    assert "message" in delete_response.json()
 
 def test_delete_user_forbidden():
     payload = {

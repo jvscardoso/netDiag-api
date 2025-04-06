@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
 from app.utils.jwt import token_required, role_required
-from app.services.diagnostics_service import get_diagnostics, get_diagnostics_aggregated
+from app.services.diagnostics_service import get_diagnostics, get_diagnostics_grouped
 
 diag_bp = Blueprint("diagnostics", __name__, url_prefix="/diagnostics")
 
@@ -22,10 +22,12 @@ def diagnostics_list():
 @diag_bp.route("/grouped", methods=["GET"])
 @token_required
 @role_required("admin", "analyst")
-def diagnostics_aggregate():
+def diagnostics_grouped():
     try:
         filters = request.args.to_dict()
-        result = get_diagnostics_aggregated(filters)
-        return jsonify(result)
+        data = get_diagnostics_grouped(filters)
+        return jsonify(data), 200
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": "Internal Server Error"}), 500

@@ -1,6 +1,7 @@
 from sqlalchemy import text
 from app.database.database import SessionLocal
 
+ # INDEX
 def get_diagnostics(page, limit, filters):
     offset = (page - 1) * limit
     query = "SELECT * FROM diagnostics"
@@ -28,7 +29,8 @@ def get_diagnostics(page, limit, filters):
     finally:
         session.close()
 
-def get_diagnostics_aggregated(filters=None):
+# GROUPED
+def get_diagnostics_grouped(filters=None):
     base_query = """
         SELECT 
             DATE(date) AS day,
@@ -40,10 +42,16 @@ def get_diagnostics_aggregated(filters=None):
         WHERE 1=1
     """
 
+    VALID_FILTERS = {"state", "city"}
+
     where_clauses = []
     params = {}
 
     if filters:
+        invalid_keys = [key for key in filters if key not in VALID_FILTERS]
+        if invalid_keys:
+            raise ValueError(f"Filtro inválido: {', '.join(invalid_keys)}")
+
         for key, value in filters.items():
             where_clauses.append(f"{key} = :{key}")
             params[key] = value
