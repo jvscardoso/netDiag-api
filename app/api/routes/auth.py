@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, g
 from app.services.auth_service import authenticate_user, create_user, get_user
 from app.middlewares.auth_middleware import token_required
 
@@ -49,10 +49,10 @@ def register():
 @auth_bp.route('/me', methods=['GET'])
 @token_required
 def get_me():
-    user_id = request.user.get("sub")
+    user_id = g.user.get("sub")  # Usando g.user aqui
     user = get_user(user_id)
-    
+
     if not user:
         return jsonify({"error": "Usuário não encontrado"}), 404
-    
+
     return jsonify(user), 200
