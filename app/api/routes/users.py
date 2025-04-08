@@ -18,7 +18,9 @@ def list_users_route():
     }
 
     users = list_users(filters)
-    return jsonify(users)
+    return jsonify({
+        "items": users,
+    })
 
 
 # USER UPDATE

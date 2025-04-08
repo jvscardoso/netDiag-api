@@ -24,7 +24,7 @@ def admin_required(f):
     @wraps(f)
     @token_required
     def decorated(*args, **kwargs):
-        user = getattr(request, 'user', None)
+        user = getattr(g, 'user', None)
         if not user or user.get("role") != "admin":
             return jsonify({"error": "Acesso restrito a administradores"}), 403
 

@@ -1,5 +1,6 @@
 from sqlalchemy import text
 from app.database.database import SessionLocal
+from datetime import datetime, timedelta
 
  # INDEX
 def get_diagnostics(page, limit, filters):
@@ -8,8 +9,31 @@ def get_diagnostics(page, limit, filters):
     where_clauses = []
     params = {}
 
+    qos_filter = filters.pop("qos_filter", None)
+    if qos_filter == "good":
+        where_clauses.append("quality_of_service >= 0.8")
+    elif qos_filter == "regular":
+        where_clauses.append("quality_of_service >= 0.5 AND quality_of_service < 0.8")
+    elif qos_filter == "bad":
+        where_clauses.append("quality_of_service < 0.5")
+
+    date_filter = filters.pop("date", None)
+    if date_filter:
+        try:
+            date_obj = datetime.fromisoformat(date_filter.replace("Z", "+00:00"))
+            start_of_day = date_obj.replace(hour=0, minute=0, second=0, microsecond=0)
+            end_of_day = start_of_day + timedelta(days=1)
+
+            where_clauses.append("date >= :start_date AND date < :end_date")
+            params["start_date"] = start_of_day
+            params["end_date"] = end_of_day
+        except ValueError:
+            pass  
+
     for key, value in filters.items():
         if key in ["page", "limit"]:
+            continue
+        if value == "":
             continue
         where_clauses.append(f"{key} = :{key}")
         params[key] = value
@@ -24,10 +48,16 @@ def get_diagnostics(page, limit, filters):
     session = SessionLocal()
     try:
         result = session.execute(text(query), params)
-        diagnostics = [dict(row._mapping) for row in result]
+        diagnostics = []
+        for row in result:
+            row_dict = dict(row._mapping)
+            if "date" in row_dict and isinstance(row_dict["date"], datetime):
+                row_dict["date"] = row_dict["date"].isoformat()
+            diagnostics.append(row_dict)
         return diagnostics
     finally:
         session.close()
+
 
 # GROUPED
 def get_diagnostics_grouped(filters=None):

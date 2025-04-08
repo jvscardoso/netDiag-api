@@ -1,7 +1,7 @@
 import os
 import bcrypt
 import jwt
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from sqlalchemy import text
 from app.database.database import SessionLocal
 
@@ -26,7 +26,7 @@ def authenticate_user(email, password):
             'name': name,
             'email': email,
             'role': role,
-            'exp': datetime.utcnow() + timedelta(hours=6)
+            'exp': datetime.now(timezone.utc) + timedelta(hours=24)
         }
 
         token = jwt.encode(payload, os.environ.get('SECRET_KEY'), algorithm='HS256')

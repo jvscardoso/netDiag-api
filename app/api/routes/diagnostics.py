@@ -14,7 +14,9 @@ def diagnostics_list():
         limit = int(request.args.get("limit", 10))
         filters = request.args.to_dict()
         diagnostics = get_diagnostics(page, limit, filters)
-        return jsonify(diagnostics)
+        return jsonify({
+                "items": diagnostics
+            })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
