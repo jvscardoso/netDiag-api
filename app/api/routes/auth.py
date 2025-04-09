@@ -15,6 +15,10 @@ def login():
         return jsonify({"error": "E-mail e senha são obrigatórios"}), 400
 
     result = authenticate_user(email, password)
+    print(result)
+
+    if result == "blocked":
+        return jsonify({"error": "Usuário bloqueado"}), 403
 
     if not result:
         return jsonify({"error": "Credenciais inválidas"}), 401

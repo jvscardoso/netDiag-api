@@ -9,14 +9,21 @@ from app.database.database import SessionLocal
 def authenticate_user(email, password):
     session = SessionLocal()
     try:
-        query = text("SELECT id, name, password_hash, role FROM users WHERE email = :email")
+        query = text("""
+            SELECT id, name, password_hash, role, deleted_at
+            FROM users
+            WHERE email = :email
+        """)
         result = session.execute(query, {"email": email})
         user = result.fetchone()
 
         if not user:
             return None
 
-        user_id, name, password_hash, role = user
+        user_id, name, password_hash, role, deleted_at = user
+
+        if deleted_at is not None:
+            return "blocked"
 
         if not bcrypt.checkpw(password.encode('utf-8'), password_hash.encode('utf-8')):
             return None
@@ -33,6 +40,7 @@ def authenticate_user(email, password):
         return token, name, role
     finally:
         session.close()
+
 
 # Criação de usuário
 def create_user(name, email, password, role='user'):
@@ -75,7 +83,7 @@ def get_user(user_id):
 
         if not user:
             return None
-
+        
         return {
             "id": user.id,
             "name": user.name,
