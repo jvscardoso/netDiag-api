@@ -45,14 +45,7 @@ pip install -r requirements.txt
 
 ### 4. Configure as variáveis de ambiente
 
-Crie um arquivo `.env` na raiz do projeto com o seguinte conteúdo:
-
-```env
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/netdiag
-SECRET_KEY=sua_chave_secreta
-```
-
-> **Dica:** Você pode usar `python-dotenv` para carregar esse `.env` automaticamente.
+Faça uma copia do arquivo `.env.example` com o nome de `.env`
 
 ### 5. Suba o banco com Docker
 
@@ -66,11 +59,8 @@ docker-compose up -d
 
 ## ▶️ Executando a API
 
-```bash
-flask run
-```
-
 A API estará disponível em: [http://localhost:5000](http://localhost:5000)
+Você pode visualizar as rotas pelo Postman=[https://innovatech-labs.postman.co/workspace/Net-Diag~49f707c8-17b5-4ca7-b2db-0ac1f34ae640/collection/42960732-5fe8f649-35bf-41c9-90cb-ac76e1ee0fbd?action=share&creator=42960732&active-environment=42960732-235d0d38-497c-4147-b2a4-306b66ea8973]
 
 ---
 
@@ -102,4 +92,14 @@ pytest
 | Role     | Permissões                                                    |
 |----------|---------------------------------------------------------------|
 | `admin`  | Acesso total a todos os recursos                              |
-| `analyst`| Leitura de dados de diagnóstico (lista e agregados)          |
+| `analyst`| Leitura de dados de diagnóstico (lista e agregados)           |
+| `user`   | Acesso limitado a somente o perfil                            |
+|--------------------------------------------------------------------------|
+
+## 🔑 Credenciais
+
+- email: admin@netdiag.io
+- email: user@netdiag.io
+- email: analyst@netdiag.io
+
+Todos os usuários usam a senha 'admin123'

@@ -23,6 +23,26 @@ VALUES (
 )
 ON CONFLICT (email) DO NOTHING;
 
+-- Usuário admin inicial (senha: admin123)
+INSERT INTO users (name, email, password_hash, role)
+VALUES (
+    'Joe Doe Analyst',
+    'analyst@netdiag.com',
+    '$2b$12$V2IwvlUcMDEjg4bwPF0lZehxjTQ.83fisQjYFxyCmkTAbDwZgiU1q', 
+    'analyst'
+)
+ON CONFLICT (email) DO NOTHING;
+
+-- Usuário admin inicial (senha: admin123)
+INSERT INTO users (name, email, password_hash, role)
+VALUES (
+    'Joe Doe User',
+    'user@netdiag.com',
+    '$2b$12$V2IwvlUcMDEjg4bwPF0lZehxjTQ.83fisQjYFxyCmkTAbDwZgiU1q', 
+    'user'
+)
+ON CONFLICT (email) DO NOTHING;
+
 -- Criação da tabela de diagnósticos
 CREATE TABLE IF NOT EXISTS diagnostics (
     id SERIAL PRIMARY KEY,
