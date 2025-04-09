@@ -4,7 +4,7 @@
 
 A **netDiag API** é a camada de backend de um sistema de diagnósticos de rede. O projeto simula um ambiente corporativo onde analistas e administradores podem consultar, filtrar e agregar dados de diagnósticos coletados de dispositivos espalhados em diferentes localidades.
 
-Este repositório contém a implementação da API RESTful desenvolvida em **Flask**, com banco de dados **PostgreSQL**, utilizando SQL puro para atender aos requisitos técnicos do desafio proposto.
+Este repositório contém a implementação da API RESTful desenvolvida em **Flask**, com banco de dados **PostgreSQL**, utilizando SQL puro.
 
 ---
 
@@ -25,7 +25,7 @@ Este repositório contém a implementação da API RESTful desenvolvida em **Fla
 ### 1. Clone o repositório
 
 ```bash
-git clone https://github.com/seu-usuario/netDiag-api.git
+git clone https://github.com/jvscardoso/netDiag-api.git
 cd netDiag-api
 ```
 
