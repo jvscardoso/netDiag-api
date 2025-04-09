@@ -6,7 +6,6 @@ dashboard_bp = Blueprint("dashboard", __name__,)
 
 @dashboard_bp.route("/dashboard", methods=["GET"])
 @token_required
-@role_required("admin", "analyst")
 def diagnostics_metrics():
     metrics = get_general_metrics()
     return jsonify(metrics)

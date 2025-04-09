@@ -55,6 +55,11 @@ docker-compose up -d
 
 > Isso criará o container do PostgreSQL e executará o script `init_db.sql`.
 
+### 6. Crie os usuário no banco
+```bash
+python users_seed.py
+```
+
 ---
 
 ## ▶️ Executando a API
@@ -98,8 +103,8 @@ pytest
 
 ## 🔑 Credenciais
 
-- email: admin@netdiag.io
-- email: user@netdiag.io
-- email: analyst@netdiag.io
+admin@netdiag.com / admin123
 
-Todos os usuários usam a senha 'admin123'
+analyst@netdiag.com / analyst123
+
+user@netdiag.com / user123
