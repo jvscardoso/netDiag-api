@@ -52,12 +52,11 @@ Faça uma copia do arquivo `.env.example` com o nome de `.env`
 ```bash
 docker-compose up -d
 ```
+> Isso criará o container do PostgreSQL e executará o script `init_db.sql`. O banco será criado com os dados de diagnósticos, mas não existirão usuários.
 
-> Isso criará o container do PostgreSQL e executará o script `init_db.sql`.
-
-### 6. Crie os usuário no banco
+### 6. Crie os usuários no banco com senhas criptografadas.
 ```bash
-python users_seed.py
+python app/scripts/users_seed.py
 ```
 
 ---
@@ -99,7 +98,6 @@ pytest
 | `admin`  | Acesso total a todos os recursos                              |
 | `analyst`| Leitura de dados de diagnóstico (lista e agregados)           |
 | `user`   | Acesso limitado a somente o perfil                            |
-|--------------------------------------------------------------------------|
 
 ## 🔑 Credenciais
 
@@ -108,3 +106,5 @@ admin@netdiag.com / admin123
 analyst@netdiag.com / analyst123
 
 user@netdiag.com / user123
+
+**Desenvolvido por [João Vitor Cardoso]**
